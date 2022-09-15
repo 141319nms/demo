@@ -1,0 +1,27 @@
+server:
+  port: 8070
+
+spring:
+  application:
+    name: alongsidecar
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://user:password123@localhost:8761/eureka
+  #instance:
+    #prefer-ip-address: true 
+    #hostname: localhost 
+
+#访问sidecar地址，转发到哪个地址
+sidecar:
+  port: 8060  #端口号，提供服务的端口，这里时nodejs
+  health-uri: http://localhost:8060/health.json  #服务端提供的心跳检测接口
+  hostname: localhost
+  ip-address: 127.0.0.1
+  
+
+#clientName:
+alongsidecar:
+  ribbon:
+    retryableStatusCodes: 404,502

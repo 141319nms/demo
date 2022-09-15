@@ -1,0 +1,66 @@
+server:
+  port: 8052
+
+spring:
+  application:
+    name: ZuulGateway
+    
+ribbon:
+#  eureka:
+#    enabled: false
+  ReadTimeout: 120000
+  ConnectTimeout: 30000
+
+eureka:
+  client:
+    fetchRegistry: true
+    service-url:
+      defaultZone: http://user:password123@localhost:8761/eureka  #👾eureka注册中心连接
+
+#浏览器访问http://ip:8050/user/服务提供者api+参数
+#user映射了服务提供者的应用名spring.application.name
+zuul:
+  ignoredServices: "*"
+  routes:
+    app-a: #这级自定义，可以配置多个这级，名称不能一样
+      path: /user/** #自定义映射，代替ProviderUser（如：localhost:7900）
+      #serviceId: provider-user  #👾url被user映射，提供者spring.application.name名称
+      serviceId: EurekaConsummerHystrix  #映射有熔断器的消费者端
+      #serviceId: EUREKACONSUMMERHYSTRIX  #映射有熔断器的消费者端
+    #app-sidecar:
+     # path: /sidecar/**
+      #serviceId: alongsidecar
+    #alongsidecar: /sidecar/**
+    sidecar206v: /sidecar206v/**
+  #prefix: /route
+  host:
+    connect-timeout-millis: 125000 #这两个时间要比ribbon的大
+    socket-timeout-millis: 35000
+  retryable: true
+    
+  
+#provider-user: #模块微服务名，就是上面的spring:application:name: provider-user
+EurekaConsummerHystrix:
+  ribbon:
+    #listOfServers: http://localhost:7900,http://localhost:7901 #模块的注册端口号，就是上面的server:port:7900
+    listOfServers: http://localhost:9002  #消费者端地址
+    
+alongsidecar:
+  ribbon:
+    listOfServers: http://localhost:8070  #消费者sidecar端地址
+    
+sidecar206v:
+  ribbon:
+    listOfServers: http://localhost:8071
+
+#暴露zuul种所有代理（映射）的微服务  
+management:
+  endpoints:
+    web:
+      exposure:
+        #添加需要暴露出去的路径，"*"表示所有路径
+        include: "*"
+      
+logging:
+  level:
+    root: INFO
